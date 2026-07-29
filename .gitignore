@@ -1,0 +1,9 @@
+/bin/
+/veil
+/veil.exe
+/veil-relay
+/veil-relay.exe
+/veil-relay-data.json
+*.tmp
+*.log
+.DS_Store
