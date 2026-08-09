@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  linux-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build Linux archives
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -eu
+          mkdir -p dist package
+          for architecture in amd64 arm64; do
+            version_number=${VERSION#v}
+            CGO_ENABLED=0 GOOS=linux GOARCH=$architecture go build \
+              -trimpath -ldflags="-s -w -X github.com/422dev/veil/internal/protocol.Version=$version_number" \
+              -o package/veil ./cmd/veil
+            tar -czf "dist/veil-linux-$architecture.tar.gz" -C package veil
+
+            CGO_ENABLED=0 GOOS=linux GOARCH=$architecture go build \
+              -trimpath -ldflags="-s -w -X github.com/422dev/veil/internal/protocol.Version=$version_number" \
+              -o package/veil-relay ./cmd/veil-relay
+            tar -czf "dist/veil-relay-linux-$architecture.tar.gz" -C package veil-relay
+          done
+          cd dist
+          sha256sum *.tar.gz > checksums.txt
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
