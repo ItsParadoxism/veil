@@ -37,7 +37,7 @@ veil
 The installer supports Linux `amd64` and `arm64`, verifies the release SHA-256 checksum, and installs to `~/.local/bin`. To install the self-hosted relay too:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/422dev/veil/main/install.sh | sh -s -- --relay
+curl -fsSL https://raw.githubusercontent.com/ItsParadoxism/veil/main/install.sh | sh -s -- --relay
 ```
 
 ### Build from source
